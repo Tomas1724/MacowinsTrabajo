@@ -1,0 +1,87 @@
+Voy a escribir el pseudocódigo para las principales que identifique que son: calcular el precio de una prenda, calcular el total de una venta y calcular las ganancias diarias.
+
+Explicación en prosa: 
+La clase Prenda modela las prendas con tipo (Saco, Pantalon, Camisa) y estado (Nueva, Promoción, Liquidación) como Enums, y calcula el precio con calcularPrecio().
+La clase Venta gestiona las ventas con fecha, prendasVendidas y tipoPago, usando una jerarquía Pago (Pagoefectivo y PagoTarjeta) para calcular los recargos.
+La clase tienda registra ventas y calcula ganancias diarias con calcularGanancias()
+
+
+Pseudocodigo:
+
+ENUM TipoPrenda {SACO, PANTALON, CAMISA}
+ENUM EstadoPrenda {NUEVA, PROMOCION, LIQUIDACION}
+
+CLASS Prenda
+    ATTRIBUTE tipo: TipoPrenda
+    ATTRIBUTE estado: EstadoPrenda
+    ATTRIBUTE precioBase: double
+    ATTRIBUTE valorPromocion: double
+
+    METHOD calcularPrecio(): double
+        IF estado = NUEVA
+            RETURN precioBase
+        ELSE IF estado = PROMOCION
+            RETURN precioBase - valorPromocion
+        ELSE IF estado = LIQUIDACION
+            RETURN precioBase * 0.5
+        END IF
+    END METHOD
+END CLASS
+
+
+CLASS Pago
+    METHOD calcularRecargo(totalBase: double): double
+        // Abstract method
+    END METHOD
+END CLASS
+
+CLASS PagoEfectivo INHERITS Pago
+    METHOD calcularRecargo(totalBase: double): double
+        RETURN 0
+    END METHOD
+END CLASS
+
+CLASS PagoTarjeta INHERITS Pago
+    ATTRIBUTE cuotas: int
+    ATTRIBUTE coeficienteFijo: double = 0.1  // Example value
+
+    METHOD calcularRecargo(totalBase: double): double
+        RETURN (cuotas * coeficienteFijo) + (0.01 * totalBase)
+    END METHOD
+END CLASS
+
+
+CLASS Venta
+    ATTRIBUTE fecha: Date
+    ATTRIBUTE prendasVendidas: Map<Prenda, Integer>
+    ATTRIBUTE tipoPago: Pago
+
+    METHOD calcularTotal(): double
+        totalBase = 0
+        FOR EACH pair (prenda, cantidad) IN prendasVendidas
+            totalBase = totalBase + (prenda.calcularPrecio() * cantidad)
+        END FOR
+        recargo = tipoPago.calcularRecargo(totalBase)
+        RETURN totalBase + recargo
+    END METHOD
+END CLASS
+
+
+CLASS Tienda
+    ATTRIBUTE ventas: List<Venta>
+
+    METHOD registrarVenta(venta: Venta)
+        ADD venta TO ventas
+    END METHOD
+
+    METHOD calcularGanancias(fecha: Date): double
+        ganancias = 0
+        FOR EACH venta IN ventas
+            IF venta.fecha = fecha
+                ganancias = ganancias + venta.calcularTotal()
+            END IF
+        END FOR
+        RETURN ganancias
+    END METHOD
+END CLASS
+
